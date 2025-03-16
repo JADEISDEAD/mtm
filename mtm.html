@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mouse Movement Simulator</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: url('https://media1.tenor.com/m/ERIEL8E9AI0AAAAC/colour-colors.gif') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            color: white;
+            text-align: center;
+            overflow: hidden;
+
+        #message {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3em;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            visibility: visible;
+            animation: flash 1s infinite;
+        }
+
+        @keyframes flash {
+            0% { color: red; }
+            25% { color: green; }
+            50% { color: blue; }
+            75% { color: yellow; }
+            100% { color: pink; }
+        }
+
+        .fail-message {
+            color: red;
+            font-size: 2.5em;
+            visibility: hidden;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <div id="message" class="message">MOVE THE MOUSE</div>
+    <div id="failMessage" class="fail-message">YOU FAILED, FUCKO!</div>
+
+    <script>
+        let message = document.getElementById("message");
+        let failMessage = document.getElementById("failMessage");
+
+        let lastMoveTime = Date.now();
+        let inactivityTimeout;
+        let gracePeriodPassed = false;
+
+        // Function to track mouse movement
+        function trackMouseMovement(event) {
+            if (!gracePeriodPassed) {
+                // Start the 3-second grace period
+                setTimeout(() => {
+                    gracePeriodPassed = true;
+                    console.log("Grace period ended. You must keep moving the mouse now!");
+                }, 3000); // 3 seconds grace period before inactivity starts checking
+            }
+
+            // If 3 seconds have passed, start tracking inactivity
+            if (gracePeriodPassed) {
+                // Reset inactivity timeout every time the mouse moves
+                clearTimeout(inactivityTimeout);
+                lastMoveTime = Date.now();
+                failMessage.style.visibility = 'hidden';  // Hide fail message when mouse moves
+            }
+        }
+
+        // Function to check for inactivity and trigger fail message
+        function checkInactivity() {
+            if (gracePeriodPassed) {
+                let currentTime = Date.now();
+                let deltaTime = currentTime - lastMoveTime;
+
+                if (deltaTime > 1000) { // If mouse stops moving for 1 second
+                    failMessage.style.visibility = 'visible';
+                    message.style.visibility = 'hidden';
+                } else {
+                    inactivityTimeout = setTimeout(checkInactivity, 500); // Check every 500ms for inactivity
+                }
+            }
+        }
+
+        // Start tracking mouse movement
+        window.addEventListener('mousemove', trackMouseMovement);
+
+        // Start inactivity check after grace period
+        setTimeout(() => {
+            gracePeriodPassed = true;  // Start checking after the grace period ends
+            inactivityTimeout = setTimeout(checkInactivity, 500);  // Start the inactivity check after 3 seconds
+        }, 3000); // 3 seconds grace period
+    </script>
+</body>
+</html>
